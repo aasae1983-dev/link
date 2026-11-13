@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>بومودورو</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;900&family=Unbounded:wght@200;600&display=swap">
+<style>
+:root{--bg:#000;--fg:#fff;--dim:#7d7d7d;--line:#2a2a2a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(ellipse at 50% 45%,#161616 0,#000 65%);color:var(--fg);font-family:"Cairo",system-ui,sans-serif;overflow:hidden}
+main{position:relative;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:18px 16px 14px}
+.modes{display:flex;gap:4px;border:1px solid var(--line);background:#0b0b0b;padding:4px;border-radius:999px;width:min(100%,400px)}
+.modes button{flex:1;border:0;background:none;color:var(--dim);font:600 14px/1 "Cairo",sans-serif;padding:11px 4px;border-radius:999px;cursor:pointer;transition:background .2s,color .2s}
+.modes button[aria-pressed="true"]{background:var(--fg);color:var(--bg)}
+.top{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
+.len{display:flex;gap:6px}
+.len.hide{visibility:hidden}
+.len button{border:1px solid var(--line);background:none;color:var(--dim);font:600 13px "Cairo",sans-serif;padding:7px 16px;border-radius:999px;cursor:pointer}
+.len button[aria-pressed="true"]{border-color:var(--fg);color:var(--fg)}
+.dial{position:relative;width:min(94vw,64vh,560px);aspect-ratio:1}
+.dial svg{position:absolute;inset:0;width:100%;height:100%}
+.tk{stroke:var(--fg);stroke-width:1.2;transition:opacity .4s}
+.tk.off{opacity:.18}
+.tk.big{stroke-width:2.4}
+.trk{fill:none;stroke:var(--line);stroke-width:5}
+.prg{fill:none;stroke:var(--fg);stroke-width:5;stroke-linecap:round;transform:rotate(-90deg);transform-origin:200px 200px;transition:stroke-dashoffset 1s linear}
+.in1{fill:none;stroke:#fff4;stroke-width:.8;stroke-dasharray:2 5}
+.in2{fill:none;stroke:var(--line);stroke-width:1}
+.orb{fill:var(--fg);transition:cx .4s linear,cy .4s linear}
+.halo{fill:none;stroke:var(--fg);stroke-width:1;opacity:0}
+.run .halo{animation:halo 2s ease-out infinite}
+@keyframes halo{0%{r:5;opacity:.7}100%{r:20;opacity:0}}
+.time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.time b{font-family:"Unbounded","Cairo",sans-serif;font-weight:200;font-size:min(17vw,12vh,92px);direction:ltr;font-variant-numeric:tabular-nums;line-height:1;letter-spacing:-.02em}
+.time i{font-style:normal;transition:opacity .2s}
+.run .time i{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.15}}
+.time span{margin-top:10px;color:var(--dim);font-size:clamp(14px,2.4vh,18px)}
+.ctrl{display:flex;gap:10px}
+.ctrl button{font:600 17px "Cairo",sans-serif;border-radius:999px;padding:13px 34px;cursor:pointer;border:1px solid var(--fg);transition:transform .15s}
+.ctrl button:active{transform:scale(.96)}
+#go{background:var(--fg);color:var(--bg);min-width:150px}
+#reset{background:none;color:var(--fg)}
+button:focus-visible{outline:3px solid var(--dim);outline-offset:3px}
+.foot{display:flex;flex-direction:column;align-items:center;gap:8px}
+.dots{display:flex;gap:10px;align-items:center;color:var(--dim);font-size:13px}
+.dots u{width:9px;height:9px;border:1px solid var(--fg);border-radius:50%;display:block}
+.dots u.on{background:var(--fg)}
+.by{font-family:"Unbounded",sans-serif;font-weight:200;font-size:12px;letter-spacing:.3em;direction:ltr;color:var(--fg);opacity:.8}
+@media (prefers-reduced-motion:reduce){.run .halo,.run .time i{animation:none}}
+</style>
+</head>
+<body>
+<main id="app">
+  <div class="top"><div class="modes" role="group" aria-label="الوضع">
+    <button data-m="25" aria-pressed="true">تركيز</button>
+    <button data-m="5" aria-pressed="false">راحة قصيرة</button>
+    <button data-m="15" aria-pressed="false">راحة طويلة</button>
+  </div>
+  <div class="len" id="len" role="group" aria-label="مدة التركيز"><button data-f="25" aria-pressed="true">٢٥ دقيقة</button><button data-f="50" aria-pressed="false">٥٠ دقيقة</button></div></div>
+  <div class="dial">
+    <svg viewBox="0 0 400 400" aria-hidden="true">
+      <circle class="in2" cx="200" cy="200" r="168"/>
+      <circle class="trk" cx="200" cy="200" r="150"/>
+      <circle class="prg" id="p" cx="200" cy="200" r="150"/>
+      <circle class="in1" cx="200" cy="200" r="128"/>
+      <circle class="in2" cx="200" cy="200" r="108"/>
+    </svg>
+    <div class="time"><b><span id="mm" style="all:unset">25</span><i>:</i><span id="ss" style="all:unset">00</span></b><span id="l">وقت التركيز</span></div>
+  </div>
+  <div class="ctrl">
+    <button id="go">ابدأ</button>
+    <button id="reset">إعادة</button>
+  </div>
+  <div class="foot">
+    <div class="dots"><u></u><u></u><u></u><u></u><span id="c">٠ جلسة</span></div>
+    <div class="by">AHMED ASHRAF</div>
+  </div>
+</main>
+<script>
+(function(){
+  var R=150,C=2*Math.PI*R;
+  var app=document.getElementById('app');
+  var prg=document.getElementById('p');
+  prg.style.strokeDasharray=C;
+  var mins=25,fl=25,total=1500,left=1500,timer=null,done=0;
+  var mm=document.getElementById('mm'),ss=document.getElementById('ss'),lEl=document.getElementById('l'),go=document.getElementById('go'),cEl=document.getElementById('c');
+  var dots=document.querySelectorAll('.dots u');
+  var labels={25:'وقت التركيز',5:'خد راحة قصيرة',15:'خد راحة طويلة'};
+  function p2(n){return (n<10?'0':'')+n}
+  function draw(){
+    var e=1-left/total,m=Math.floor(left/60),s=left%60;
+    mm.textContent=p2(m);ss.textContent=p2(s);
+    prg.style.strokeDashoffset=-C*e;
+    document.title=p2(m)+':'+p2(s)+' • بومودورو';
+  }
+  function beep(){
+    try{
+      var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();
+      o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.2;
+      o.start();o.stop(a.currentTime+.6);
+    }catch(e){}
+  }
+  function stop(){clearInterval(timer);timer=null;go.textContent='ابدأ';app.classList.remove('run')}
+  function setMode(m){
+    stop();mins=m;total=left=(m===25?fl:m)*60;
+    lEl.textContent=labels[m];
+    document.getElementById('len').classList.toggle('hide',m!==25);
+    document.querySelectorAll('.modes button').forEach(function(b){b.setAttribute('aria-pressed',String(+b.dataset.m===m))});
+    draw();
+  }
+  function tick(){
+    left--;draw();
+    if(left<=0){
+      stop();beep();
+      if(mins===25){
+        done++;
+        var k=done%4===0?4:done%4;
+        dots.forEach(function(d,i){d.classList.toggle('on',i<k)});
+        cEl.textContent=done.toLocaleString('ar-EG')+' جلسة';
+        setMode(done%4===0?15:5);
+      }else{
+        if(done%4===0)dots.forEach(function(d){d.classList.remove('on')});
+        setMode(25);
+      }
+    }
+  }
+  function toggle(){
+    if(timer){stop();return}
+    go.textContent='إيقاف مؤقت';app.classList.add('run');
+    timer=setInterval(tick,1000);
+  }
+  go.onclick=toggle;
+  document.getElementById('reset').onclick=function(){setMode(mins)};
+  document.querySelectorAll('.modes button').forEach(function(b){b.onclick=function(){setMode(+b.dataset.m)}});
+  document.querySelectorAll('#len button').forEach(function(b){b.onclick=function(){fl=+b.dataset.f;document.querySelectorAll('#len button').forEach(function(x){x.setAttribute('aria-pressed',String(x===b))});setMode(25)}});
+  document.addEventListener('keydown',function(e){if(e.code==='Space'&&e.target.tagName!=='BUTTON'){e.preventDefault();toggle()}});
+  draw();
+})();
+</script>
+</body>
+</html>
